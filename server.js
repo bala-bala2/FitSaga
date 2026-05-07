@@ -12,7 +12,10 @@ const JWT_SECRET = 'your_secret_key_change_this'; // change this to something st
 connectDB();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173' })); // your React app
+app.use(cors({ 
+  origin: ['http://localhost:5173', 'https://fitsaga-frontend-iqum.vercel.app'],
+  credentials: true
+}));
 app.use(express.json());
 // ─── AUTH MIDDLEWARE ─────────────────────────────────────────
 const authenticateToken = (req, res, next) => {
