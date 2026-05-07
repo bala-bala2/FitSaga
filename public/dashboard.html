@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitSaga | AI Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #f0f4f8; /* Cool light gray-blue */
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --primary: #3b82f6; /* Cool Blue */
+            --primary-glow: rgba(59, 130, 246, 0.4);
+            --secondary: #0ea5e9; /* Light Blue */
+            --accent: #10b981; /* Emerald */
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            background: radial-gradient(circle at top left, #ffffff 0%, #e2e8f0 100%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Background Effects */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .orb-1 { width: 500px; height: 500px; background: rgba(59, 130, 246, 0.2); top: -200px; left: -100px; }
+        .orb-2 { width: 400px; height: 400px; background: rgba(14, 165, 233, 0.15); bottom: -100px; right: -100px; }
+
+        /* Utilities */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.05); /* Light shadow */
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            padding: 2.5rem 2rem;
+            position: fixed;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.7);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .brand i {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            flex: 1;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 1rem 1.2rem;
+            border-radius: 16px;
+            font-weight: 500;
+            font-size: 1.05rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item a:hover {
+            color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active a {
+            color: var(--primary);
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent);
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-item i {
+            font-size: 1.25rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+        }
+
+        .btn-upgrade {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px var(--primary-glow);
+            filter: brightness(1.05);
+        }
+
+        /* Main Content */
+        .main-wrapper {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 2.5rem 3.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .greeting h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 0.3rem;
+        }
+        
+        .greeting span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .greeting p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-bar {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 100px;
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 300px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-bar i { color: var(--text-muted); }
+        .search-bar input {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            outline: none;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .search-bar input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        }
+
+        .btn-icon:hover {
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px; right: 12px;
+            width: 8px; height: 8px;
+            background: #ef4444; /* Red */
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 6px 16px 6px 6px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+        
+        .profile-btn:hover { 
+            background: #ffffff; 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Dashboard Grid Layout */
+        .top-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06); }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .icon-fire { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+        .icon-water { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
+        .icon-target { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .icon-heart { background: rgba(244, 63, 94, 0.1); color: #f43f5e; }
+
+        .trend {
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .trend.up { color: var(--accent); }
+        .trend.down { color: #f43f5e; }
+
+        .stat-value { font-size: 2.2rem; font-weight: 700; line-height: 1; color: var(--text-main); }
+        .stat-label { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Nutrition Card */
+        .panel { padding: 2rem; }
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+        }
+        .panel-title { font-size: 1.3rem; font-weight: 600; color: var(--text-main); }
+        .panel-action { color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 600;}
+        .panel-action:hover { text-decoration: underline; }
+
+        .nutrition-content {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .ring-container {
+            position: relative;
+            width: 180px; height: 180px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .ring-bg {
+            fill: none; stroke: rgba(0, 0, 0, 0.04); stroke-width: 12;
+        }
+        .ring-progress {
+            fill: none; stroke: url(#gradient); stroke-width: 12; stroke-linecap: round;
+            stroke-dasharray: 440; stroke-dashoffset: 120; /* ~73% */
+            animation: animateRing 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            transform: rotate(-90deg); transform-origin: center;
+        }
+        
+        @keyframes animateRing {
+            from { stroke-dashoffset: 440; }
+        }
+
+        .ring-inner {
+            position: absolute; text-align: center;
+        }
+        .ring-inner h2 { font-size: 2.5rem; font-weight: 700; color: var(--text-main); line-height: 1.1; margin-bottom: 2px;}
+        .ring-inner p { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+
+        .macros-grid {
+            flex: 1;
+            display: flex; flex-direction: column; gap: 1.5rem;
+        }
+
+        .macro-item { display: flex; flex-direction: column; gap: 8px;}
+        .macro-header { display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 600;}
+        .macro-bar-bg { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.05); border-radius: 5px; overflow: hidden;}
+        .macro-bar-fill { height: 100%; border-radius: 5px; animation: slideFill 1.5s ease forwards; width: 0;}
+        
+        .fill-protein { background: #0ea5e9; width: 75%; box-shadow: 0 0 15px rgba(14, 165, 233, 0.6);}
+        .fill-carbs { background: #3b82f6; width: 60%; box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);}
+        .fill-fats { background: #f43f5e; width: 45%; box-shadow: 0 0 15px rgba(244, 63, 94, 0.6);}
+
+        @keyframes slideFill { from { width: 0; } }
+
+        /* AI Recommendations Panel */
+        .ai-recommendation {
+            position: relative;
+            overflow: hidden;
+            background: white;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.06);
+        }
+
+        .ai-glow {
+            position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
+            background: var(--primary-glow); filter: blur(60px); border-radius: 50%;
+        }
+
+        .ai-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(59, 130, 246, 0.1); color: var(--primary);
+            padding: 5px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .meal-card {
+            display: flex; gap: 1rem; align-items: center; padding: 1rem;
+            background: #f8fafc; border-radius: 16px; margin-bottom: 1rem;
+            transition: all 0.3s; cursor: pointer; border: 1px solid transparent;
+        }
+        .meal-card:hover {
+            background: white; border-color: rgba(59, 130, 246, 0.15); 
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .meal-img {
+            width: 70px; height: 70px; border-radius: 12px; object-fit: cover;
+        }
+
+        .meal-info h4 { font-size: 1.05rem; margin-bottom: 4px; color: var(--text-main); }
+        .meal-info p { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; }
+        
+        .generate-btn {
+            width: 100%; padding: 1rem; background: #f8fafc;
+            border: 1px dashed rgba(59, 130, 246, 0.4); border-radius: 16px; color: var(--primary);
+            font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .generate-btn:hover { background: var(--primary); border-color: var(--primary); color: white; }
+
+        .log-item {
+            background: white; border: 1px solid rgba(0,0,0,0.06); padding: 8px 16px; border-radius: 100px; font-size: 0.95rem; font-weight: 500; color: var(--text-main); display: inline-flex; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .top-stats { grid-template-columns: repeat(2, 1fr); }
+            .nutrition-content { flex-direction: column; text-align: center; }
+            .macros-grid { width: 100%; }
+        }
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-left: 0; width: 100%; }
+            .main-grid { grid-template-columns: 1fr; }
+            .search-bar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-bolt"></i> FitSaga
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item active"><a href="#"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="#"><i class="fa-solid fa-utensils"></i> Smart Diet</a></li>
+            <li class="nav-item"><a href="#"><i class="fa-solid fa-camera"></i> Food Scanner</a></li>
+            <li class="nav-item"><a href="#"><i class="fa-solid fa-dumbbell"></i> Workouts</a></li>
+            <li class="nav-item"><a href="#"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+            <li class="nav-item"><a href="/"><i class="fa-solid fa-user"></i> My Profile</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="btn-upgrade">
+                <i class="fa-solid fa-crown"></i> Go Premium
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-wrapper">
+        <header class="header">
+            <div class="greeting">
+                <h1>Welcome back, <span>Alex</span></h1>
+                <p>Here's your AI-powered health summary for today.</p>
+            </div>
+
+            <div class="top-actions">
+                <div class="search-bar">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" placeholder="Search foods, workouts...">
+                </div>
+                <button class="btn-icon">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="badge"></span>
+                </button>
+                <div class="profile-btn">
+                    <img src="https://i.pravatar.cc/100?img=11" alt="User Avatar" class="avatar">
+                    <span style="font-weight: 600; font-size: 0.95rem; margin-right: 10px; color: var(--text-main);">Alex D.</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted); margin-right: 5px;"></i>
+                </div>
+            </div>
+        </header>
+
+        <section class="top-stats">
+            <div class="glass stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon icon-fire"><i class="fa-solid fa-fire"></i></div>
+                    <span class="trend up"><i class="fa-solid fa-arrow-trend-up"></i> +12%</span>
+                </div>
+                <div>
+                    <div class="stat-value">1,840</div>
+                    <div class="stat-label">Calories Burned (kcal)</div>
+                </div>
+            </div>
+
+            <div class="glass stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon icon-water"><i class="fa-solid fa-droplet"></i></div>
+                    <span class="trend down"><i class="fa-solid fa-arrow-trend-down"></i> -5%</span>
+                </div>
+                <div>
+                    <div class="stat-value">2.1</div>
+                    <div class="stat-label">Water Intake (Liters)</div>
+                </div>
+            </div>
+
+            <div class="glass stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon icon-target"><i class="fa-solid fa-bullseye"></i></div>
+                    <span class="trend up"><i class="fa-solid fa-arrow-trend-up"></i> +8%</span>
+                </div>
+                <div>
+                    <div class="stat-value">84%</div>
+                    <div class="stat-label">Daily Goal Reached</div>
+                </div>
+            </div>
+
+            <div class="glass stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon icon-heart"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <span class="trend up"><i class="fa-solid fa-arrow-trend-up"></i> Normal</span>
+                </div>
+                <div>
+                    <div class="stat-value">72</div>
+                    <div class="stat-label">Avg. Heart Rate (bpm)</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="main-grid">
+            <div class="glass panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Nutrition Overview</h3>
+                    <a href="#" class="panel-action">View Details <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="nutrition-content">
+                    <div class="ring-container">
+                        <svg width="180" height="180" viewBox="0 0 160 160">
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#3b82f6" />
+                                    <stop offset="100%" stop-color="#0ea5e9" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="ring-bg" cx="80" cy="80" r="70"></circle>
+                            <circle class="ring-progress" cx="80" cy="80" r="70"></circle>
+                        </svg>
+                        <div class="ring-inner">
+                            <h2>1,460</h2>
+                            <p>kcal consumed</p>
+                        </div>
+                    </div>
+
+                    <div class="macros-grid">
+                        <div class="macro-item">
+                            <div class="macro-header">
+                                <span style="color: #0ea5e9;">Protein</span>
+                                <span>120g / 160g</span>
+                            </div>
+                            <div class="macro-bar-bg"><div class="macro-bar-fill fill-protein" style="max-width: 75%"></div></div>
+                        </div>
+
+                        <div class="macro-item">
+                            <div class="macro-header">
+                                <span style="color: #3b82f6;">Carbohydrates</span>
+                                <span>150g / 250g</span>
+                            </div>
+                            <div class="macro-bar-bg"><div class="macro-bar-fill fill-carbs" style="max-width: 60%"></div></div>
+                        </div>
+
+                        <div class="macro-item">
+                            <div class="macro-header">
+                                <span style="color: #f43f5e;">Fats</span>
+                                <span>35g / 65g</span>
+                            </div>
+                            <div class="macro-bar-bg"><div class="macro-bar-fill fill-fats" style="max-width: 53.8%"></div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid rgba(0,0,0,0.05);">
+                    <h4 style="margin-bottom: 1.2rem; font-weight: 600; color: var(--text-main);">Today's Log</h4>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <span class="log-item"><i class="fa-solid fa-mug-hot" style="color: var(--primary); margin-right: 8px;"></i> Oatmeal (320 kcal)</span>
+                        <span class="log-item"><i class="fa-solid fa-bowl-food" style="color: var(--primary); margin-right: 8px;"></i> Grilled Chicken Salad (450 kcal)</span>
+                        <span class="log-item"><i class="fa-solid fa-apple-whole" style="color: var(--primary); margin-right: 8px;"></i> Apple (95 kcal)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass panel ai-recommendation">
+                <div class="ai-glow"></div>
+                <div class="ai-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Suggestion</div>
+                
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; color: var(--text-main);">Next Meal Idea</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; position: relative;">Based on your macros, you need high protein and low carbs.</p>
+
+                <div class="meal-card" style="position: relative;">
+                    <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Meal" class="meal-img">
+                    <div class="meal-info">
+                        <h4>Salmon Quinoa Bowl</h4>
+                        <p>420 kcal • 35g Protein • 15min</p>
+                    </div>
+                </div>
+
+                <div class="meal-card" style="position: relative;">
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Meal" class="meal-img">
+                    <div class="meal-info">
+                        <h4>Avocado Turkey Wrap</h4>
+                        <p>380 kcal • 28g Protein • 10min</p>
+                    </div>
+                </div>
+
+                <button class="generate-btn" style="position: relative;">
+                    <i class="fa-solid fa-rotate"></i> Generate More
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Simple script to handle navigation active states and hover effects
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
